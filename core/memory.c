@@ -11,6 +11,7 @@ Memory *memory_create(uint32_t size) {
   }
   memory->memory = (uint8_t *)malloc(sizeof(uint8_t) * size);
   if (memory->memory == NULL) {
+    free(memory);
     return NULL;
   }
   memory->size = size;
