@@ -15,6 +15,10 @@ typedef struct Memory {
 
 Memory *memory_create(uint32_t);
 int memory_load_file(Memory *, FILE *, uint32_t);
+uint8_t memory_get_code8(Memory *, uint32_t);
+uint32_t memory_get_code32(Memory *, uint32_t);
+void memory_set_code8(Memory *, uint8_t, uint32_t);
+void memory_set_code32(Memory *, uint32_t, uint32_t);
 
 
 #endif

@@ -30,3 +30,29 @@ int memory_load_file(Memory *memory, FILE *file, uint32_t address) {
   }
 }
 
+
+uint8_t memory_get_code8(Memory * memory, uint32_t address) {
+  return memory->memory[address];
+}
+
+
+uint32_t memory_get_code32(Memory * memory, uint32_t address) {
+  uint32_t r = 0;
+  for (int i = 0; i < 4; i++) {
+    r |= ((uint32_t)memory->memory[address + i] << (8 * i));
+  }
+  return r;
+}
+
+
+void memory_set_code8(Memory * memory, uint8_t address, uint32_t value) {
+  memory->memory[address] = value;
+}
+
+
+void memory_set_code32(Memory * memory, uint32_t address, uint32_t value) {
+  for (int i = 0; i < 4; i++) {
+    memory->memory[address + i] = (value >> (8 * i));
+  }
+}
+
