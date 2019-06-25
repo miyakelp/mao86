@@ -34,22 +34,22 @@ void init_instruction_table(Instruction *instruction) {
 
 
 void mov_r32_imm32(CPU *cpu, Memory *memory) {
-  uint8_t reg_num = memory_get_code8(memory, cpu->reg->eip) - 0xB8;
+  uint8_t register_num = memory_get_code8(memory, cpu->reg->eip) - 0xB8;
   uint32_t value = memory_get_code32(memory, cpu->reg->eip + 1);
 
-  cpu->reg->r[reg_num] = value;
-  cpu->reg->eip += 5;
+  cpu_set_register_r(cpu, register_num, value);
+  cpu_add_to_register_eip(cpu, 5);
 }
 
 
 void short_jump(CPU *cpu, Memory *memory) {
   int8_t diff = (int8_t)memory_get_code8(memory, cpu->reg->eip + 1);
-  cpu->reg->eip += (diff + 2);
+  cpu_add_to_register_eip(cpu, diff + 2);
 }
 
 
 void near_jump(CPU *cpu, Memory *memory) {
   int32_t diff = (int32_t)memory_get_code32(memory, cpu->reg->eip + 1);
-  cpu->reg->eip += (diff + 5);
+  cpu_add_to_register_eip(cpu, diff + 5);
 }
 
