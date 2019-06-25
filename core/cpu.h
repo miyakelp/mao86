@@ -6,6 +6,7 @@
 
 typedef struct {
   Register *reg;
+  Instruction *instruction;
 } CPU;
 
 
