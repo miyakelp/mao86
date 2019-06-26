@@ -14,12 +14,22 @@ CPU *CPU_create(void) {
     free(cpu);
     return NULL;
   }
+  cpu_set_register_eip(cpu, 0);
+  cpu_set_register_eflags(cpu, 0);
+
   cpu->instruction = instruction_create();
   if (cpu->instruction == NULL) {
     free(cpu);
     return NULL;
   }
   return CPU;
+}
+
+
+void cpu_run(void) {
+  do {
+    instruction_execute(cpu->instruction, cpu, memory);    
+  } while (cpu_get_register_eip(cpu) != 0x00);
 }
 
 

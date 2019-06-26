@@ -12,6 +12,7 @@ typedef struct {
 
 
 Instruction *instruction_create(void);
+void instruction_execute(Instruction *, CPU *, Memory *);
 
 #endif
 

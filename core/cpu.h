@@ -10,7 +10,8 @@ typedef struct {
 } CPU;
 
 
-CPU *CPU_create(void);
+CPU *cpu_create(void);
+void cpu_run(CPU *);
 uint32_t cpu_get_register_eip(CPU *);
 void cpu_set_register_eip(CPU *, uint32_t);
 void cpu_add_to_register_eip(CPU *, int32_t);

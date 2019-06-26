@@ -24,6 +24,11 @@ Instruction *instruction_create(void) {
 }
 
 
+void instruction_execute(Instruction *instruction, CPU *cpu, Memory *memory) {
+  instruction->table[cpu_get_register_eip(cpu)](cpu, memory);
+}
+
+
 void init_instruction_table(Instruction *instruction) {
   for (int i = 0; i < REGISTERS_NUM; i++) {
     instruction->table[0xb8] = mov_r32_imm32;
