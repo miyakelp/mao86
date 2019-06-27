@@ -4,7 +4,7 @@
 #include "instruction.h"
 
 
-CPU *CPU_create(void) {
+CPU *cpu_create(void) {
   CPU *cpu = (CPU *)malloc(sizeof(CPU));
   if (cpu == NULL) {
     return NULL;
@@ -17,18 +17,15 @@ CPU *CPU_create(void) {
   cpu_set_register_eip(cpu, 0);
   cpu_set_register_eflags(cpu, 0);
 
-  cpu->instruction = instruction_create();
-  if (cpu->instruction == NULL) {
-    free(cpu);
-    return NULL;
-  }
-  return CPU;
+  instruction_init_table();
+
+  return cpu;
 }
 
 
-void cpu_run(void) {
+void cpu_run(CPU *cpu, Memory *memory) {
   do {
-    instruction_execute(cpu->instruction, cpu, memory);    
+    instruction_execute(cpu, memory);    
   } while (cpu_get_register_eip(cpu) != 0x00);
 }
 

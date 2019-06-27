@@ -5,36 +5,24 @@
 #include "register.h"
 #include "instruction.h"
 
-
-void init_instruction_table(Instruction *);
+instruction_function_t *instruction_table[0xff];
 
 void mov_r32_imm32(CPU *, Memory *);
 void short_jump(CPU *, Memory *);
 void near_jump(CPU *, Memory *);
 
 
-Instruction *instruction_create(void) {
-  Instruction *instruction = (Instruction *)malloc(sizeof(Instruction));
-  if (instruction == NULL) {
-    return NULL;
-  }
-  init_instruction_table(instruction);
-
-  return instruction;
-}
-
-
-void instruction_execute(Instruction *instruction, CPU *cpu, Memory *memory) {
-  instruction->table[cpu_get_register_eip(cpu)](cpu, memory);
-}
-
-
-void init_instruction_table(Instruction *instruction) {
+void instruction_init_table(void) {
   for (int i = 0; i < REGISTERS_NUM; i++) {
-    instruction->table[0xb8] = mov_r32_imm32;
+    instruction_table[0xb8] = mov_r32_imm32;
   }
-  instruction->table[0xe9] = near_jump;
-  instruction->table[0xe9] = short_jump;
+  instruction_table[0xe9] = near_jump;
+  instruction_table[0xeb] = short_jump;
+}
+
+
+void instruction_execute(CPU *cpu, Memory *memory) {
+  instruction_table[cpu_get_register_eip(cpu)](cpu, memory);
 }
 
 

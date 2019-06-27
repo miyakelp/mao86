@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define DEFAULT_MEMORY_SIZE 0xffff;
+#define DEFAULT_MEMORY_SIZE 0xffff
 
 typedef struct Memory {
   uint32_t size;
