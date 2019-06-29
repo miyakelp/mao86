@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "cpu.h"
 #include "memory.h"
+#include "debug.h"
 
 
 int main(int argc, char *argv[]) {
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
   memory_load_file(memory, binary, 0);
   fclose(binary);
 
-  cpu_run(cpu, memory);  
+  cpu_run(cpu, memory);
+  debug_print_registers(cpu);
 }
 

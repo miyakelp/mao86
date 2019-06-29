@@ -1,6 +1,6 @@
 COMPILER = gcc
 CFLAGS   = --Wall
-INCLUDE  = -I./core
+INCLUDE  = -I./core -I./
 TARGET   = ./mao86
 SRCROOT  = ./
 OBJROOT  = ./obj

@@ -14,7 +14,7 @@ void near_jump(CPU *, Memory *);
 
 void instruction_init_table(void) {
   for (int i = 0; i < REGISTERS_NUM; i++) {
-    instruction_table[0xb8] = mov_r32_imm32;
+    instruction_table[0xb8 + i] = mov_r32_imm32;
   }
   instruction_table[0xe9] = near_jump;
   instruction_table[0xeb] = short_jump;
