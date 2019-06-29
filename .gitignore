@@ -1,4 +1,5 @@
 mao86
 *.o
+*.bin
 obj/
 
