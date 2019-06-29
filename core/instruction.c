@@ -22,7 +22,8 @@ void instruction_init_table(void) {
 
 
 void instruction_execute(CPU *cpu, Memory *memory) {
-  instruction_table[cpu_get_register_eip(cpu)](cpu, memory);
+  uint8_t opcode = memory_get_code8(memory, cpu_get_register_eip(cpu));
+  instruction_table[opcode](cpu, memory);
 }
 
 

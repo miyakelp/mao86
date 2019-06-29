@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
   memory_load_file(memory, binary, 0);
   fclose(binary);
 
-
-  
+  cpu_run(cpu, memory);  
 }
 
