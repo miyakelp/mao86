@@ -27,6 +27,9 @@ uint32_t calc_memory_address(CPU *, ModRM *);
 uint32_t get_rm32(CPU *, Memory *, ModRM *);
 void set_rm32(CPU *, Memory *, ModRM *, uint32_t);
 
+static void add_rm32_r32(CPU *, Memory*);
+static void sub_rm32_imm8(CPU *, Memory*, ModRM *);
+static void code_83(CPU *, Memory *);
 static void mov_r32_imm32(CPU *, Memory *);
 static void mov_rm32_imm32(CPU *, Memory *);
 static void mov_rm32_r32(CPU *, Memory *);
@@ -36,6 +39,8 @@ static void near_jump(CPU *, Memory *);
 
 
 void instruction_init_table(void) {
+  instruction_table[0x01] = add_rm32_r32;
+  instruction_table[0x83] = code_83;
   instruction_table[0x89] = mov_rm32_r32;
   instruction_table[0x8b] = mov_r32_rm32;
   for (int i = 0; i < REGISTERS_NUM; i++) {
@@ -124,6 +129,44 @@ void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm, uint32_t value) {
   } else {
     uint32_t address = calc_memory_address(cpu, modrm);
     memory_set_code32(memory, address, value);
+  }
+}
+
+
+static void add_rm32_r32(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
+
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  uint32_t r32 = cpu_get_register_r(cpu, modrm.register_index);
+  uint32_t rm32 = get_rm32(cpu, memory, &modrm);
+  set_rm32(cpu, memory, &modrm, rm32 + r32);
+}
+
+
+static void sub_rm32_imm8(CPU *cpu, Memory *memory, ModRM *modrm) {
+  uint32_t rm32 = get_rm32(cpu, memory, modrm);
+  uint32_t imm8 = (int8_t)memory_get_code8(memory, cpu_get_register_eip(cpu));
+  cpu_add_to_register_eip(cpu, 1);
+  set_rm32(cpu, memory, modrm, rm32 - imm8);
+}
+
+
+static void code_83(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
+
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  switch (modrm.opecode) {
+  case 0x05:
+    sub_rm32_imm8(cpu, memory, &modrm);
+    break;
+  default:
+    /* TODO */
+    exit(1);
+    break;
   }
 }
 
