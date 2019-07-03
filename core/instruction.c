@@ -24,7 +24,7 @@ typedef struct {
 
 void parse_modrm(CPU *, Memory *, ModRM *);
 uint32_t calc_memory_address(CPU *, ModRM *);
-void set_rm32(CPU *, Memory *, ModRM *);
+void set_rm32(CPU *, Memory *, ModRM *, uint32_t);
 
 void mov_r32_imm32(CPU *, Memory *);
 void mov_rm32_imm32(CPU *, Memory *);
@@ -102,8 +102,12 @@ uint32_t calc_memory_address(CPU *cpu, ModRM *modrm) {
 }
 
 
-void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm) {
-
+void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm, uint32_t value) {
+  if (modrm->mod == 0x03) {
+  } else {
+    uint32_t address = calc_memory_address(cpu, modrm);
+    memory_set_code32(memory, address, value);
+  }
 }
 
 
