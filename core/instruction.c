@@ -24,18 +24,24 @@ typedef struct {
 
 void parse_modrm(CPU *, Memory *, ModRM *);
 uint32_t calc_memory_address(CPU *, ModRM *);
+uint32_t get_rm32(CPU *, Memory *, ModRM *);
 void set_rm32(CPU *, Memory *, ModRM *, uint32_t);
 
 void mov_r32_imm32(CPU *, Memory *);
 void mov_rm32_imm32(CPU *, Memory *);
+void mov_rm32_r32(CPU *, Memory *);
+void mov_r32_rm32(CPU *, Memory *);
 void short_jump(CPU *, Memory *);
 void near_jump(CPU *, Memory *);
 
 
 void instruction_init_table(void) {
+  instruction_table[0x89] = mov_rm32_r32;
+  instruction_table[0x8b] = mov_r32_rm32;
   for (int i = 0; i < REGISTERS_NUM; i++) {
     instruction_table[0xb8 + i] = mov_r32_imm32;
   }
+  instruction_table[0xc7] = mov_rm32_imm32;
   instruction_table[0xe9] = near_jump;
   instruction_table[0xeb] = short_jump;
 }
@@ -102,8 +108,19 @@ uint32_t calc_memory_address(CPU *cpu, ModRM *modrm) {
 }
 
 
+uint32_t get_rm32(CPU *cpu, Memory *memory, ModRM *modrm) {
+  if (modrm->mod == 0x03) {
+    return cpu_get_register_r(cpu, modrm->rm);
+  } else {
+    uint32_t address = calc_memory_address(cpu, modrm);
+    return memory_get_code32(memory, address);
+  }
+}
+
+
 void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm, uint32_t value) {
   if (modrm->mod == 0x03) {
+    cpu_set_register_r(cpu, modrm->rm, value);
   } else {
     uint32_t address = calc_memory_address(cpu, modrm);
     memory_set_code32(memory, address, value);
@@ -128,7 +145,29 @@ void mov_rm32_imm32(CPU *cpu, Memory *memory) {
 
   uint32_t imm = memory_get_code32(memory, cpu_get_register_eip(cpu));
   cpu_add_to_register_eip(cpu, 4);
-  set_rm32(cpu, memory, &modrm);
+  set_rm32(cpu, memory, &modrm, imm);
+}
+
+
+void mov_rm32_r32(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
+
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  uint32_t r32 = cpu_get_register_r(cpu, modrm.register_index);
+  set_rm32(cpu, memory, &modrm, r32);
+}
+
+
+void mov_r32_rm32(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
+
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  uint32_t rm32 = get_rm32(cpu, memory, &modrm);
+  cpu_set_register_r(cpu, modrm.register_index, rm32);
 }
 
 
