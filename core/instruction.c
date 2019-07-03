@@ -23,7 +23,11 @@ typedef struct {
 } ModRM;
 
 void parse_modrm(CPU *, Memory *, ModRM *);
+uint32_t calc_memory_address(CPU *, ModRM *);
+void set_rm32(CPU *, Memory *, ModRM *);
+
 void mov_r32_imm32(CPU *, Memory *);
+void mov_rm32_imm32(CPU *, Memory *);
 void short_jump(CPU *, Memory *);
 void near_jump(CPU *, Memory *);
 
@@ -69,12 +73,58 @@ void parse_modrm(CPU *cpu, Memory *memory, ModRM *modrm) {
 }
 
 
+uint32_t calc_memory_address(CPU *cpu, ModRM *modrm) {
+  if (modrm->mod == 0x00) {
+    if (modrm->rm == 0x04) {
+      /* TODO */
+      exit(1);
+    } else if (modrm->rm == 0x05) {
+      return modrm->disp32;
+    }
+  } else if (modrm->mod == 0x01) {
+    if (modrm->rm == 0x04) {
+      /* TODO */
+      exit(1);
+    } else {
+      return cpu_get_register_r(cpu, modrm->rm) + modrm->disp8;
+    }
+  } else if (modrm->mod == 0x02) {
+    if (modrm->rm == 0x04) {
+      /* TODO */
+      exit(1);
+    } else {
+      return cpu_get_register_r(cpu, modrm->rm) + modrm->disp32;
+    }
+  } else {
+    /* TODO */
+    exit(1);
+  }
+}
+
+
+void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm) {
+
+}
+
+
 void mov_r32_imm32(CPU *cpu, Memory *memory) {
   uint8_t register_num = memory_get_code8(memory, cpu->reg->eip) - 0xB8;
   uint32_t value = memory_get_code32(memory, cpu->reg->eip + 1);
 
   cpu_set_register_r(cpu, register_num, value);
   cpu_add_to_register_eip(cpu, 5);
+}
+
+
+void mov_rm32_imm32(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
+
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  uint32_t imm = memory_get_code32(memory, cpu_get_register_eip(cpu));
+  cpu_add_to_register_eip(cpu, 4);
+  set_rm32(cpu, memory, &modrm);
 }
 
 
