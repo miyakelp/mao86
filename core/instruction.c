@@ -27,12 +27,12 @@ uint32_t calc_memory_address(CPU *, ModRM *);
 uint32_t get_rm32(CPU *, Memory *, ModRM *);
 void set_rm32(CPU *, Memory *, ModRM *, uint32_t);
 
-void mov_r32_imm32(CPU *, Memory *);
-void mov_rm32_imm32(CPU *, Memory *);
-void mov_rm32_r32(CPU *, Memory *);
-void mov_r32_rm32(CPU *, Memory *);
-void short_jump(CPU *, Memory *);
-void near_jump(CPU *, Memory *);
+static void mov_r32_imm32(CPU *, Memory *);
+static void mov_rm32_imm32(CPU *, Memory *);
+static void mov_rm32_r32(CPU *, Memory *);
+static void mov_r32_rm32(CPU *, Memory *);
+static void short_jump(CPU *, Memory *);
+static void near_jump(CPU *, Memory *);
 
 
 void instruction_init_table(void) {
@@ -128,7 +128,7 @@ void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm, uint32_t value) {
 }
 
 
-void mov_r32_imm32(CPU *cpu, Memory *memory) {
+static void mov_r32_imm32(CPU *cpu, Memory *memory) {
   uint8_t register_num = memory_get_code8(memory, cpu->reg->eip) - 0xB8;
   uint32_t value = memory_get_code32(memory, cpu->reg->eip + 1);
 
@@ -137,7 +137,7 @@ void mov_r32_imm32(CPU *cpu, Memory *memory) {
 }
 
 
-void mov_rm32_imm32(CPU *cpu, Memory *memory) {
+static void mov_rm32_imm32(CPU *cpu, Memory *memory) {
   cpu_add_to_register_eip(cpu, 1);
 
   ModRM modrm;
@@ -149,7 +149,7 @@ void mov_rm32_imm32(CPU *cpu, Memory *memory) {
 }
 
 
-void mov_rm32_r32(CPU *cpu, Memory *memory) {
+static void mov_rm32_r32(CPU *cpu, Memory *memory) {
   cpu_add_to_register_eip(cpu, 1);
 
   ModRM modrm;
@@ -160,7 +160,7 @@ void mov_rm32_r32(CPU *cpu, Memory *memory) {
 }
 
 
-void mov_r32_rm32(CPU *cpu, Memory *memory) {
+static void mov_r32_rm32(CPU *cpu, Memory *memory) {
   cpu_add_to_register_eip(cpu, 1);
 
   ModRM modrm;
@@ -171,13 +171,13 @@ void mov_r32_rm32(CPU *cpu, Memory *memory) {
 }
 
 
-void short_jump(CPU *cpu, Memory *memory) {
+static void short_jump(CPU *cpu, Memory *memory) {
   int8_t diff = (int8_t)memory_get_code8(memory, cpu->reg->eip + 1);
   cpu_add_to_register_eip(cpu, diff + 2);
 }
 
 
-void near_jump(CPU *cpu, Memory *memory) {
+static void near_jump(CPU *cpu, Memory *memory) {
   int32_t diff = (int32_t)memory_get_code32(memory, cpu->reg->eip + 1);
   cpu_add_to_register_eip(cpu, diff + 5);
 }
