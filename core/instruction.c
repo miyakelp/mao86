@@ -26,12 +26,14 @@ void parse_modrm(CPU *, Memory *, ModRM *);
 uint32_t calc_memory_address(CPU *, ModRM *);
 uint32_t get_rm32(CPU *, Memory *, ModRM *);
 void set_rm32(CPU *, Memory *, ModRM *, uint32_t);
-void push32(CPU *, Memory *, uint8_t);
+void push32(CPU *, Memory *, uint32_t);
 uint32_t pop32(CPU *, Memory *);
 
 static void add_rm32_r32(CPU *, Memory *);
 static void push_r32(CPU *, Memory *);
 static void pop_r32(CPU *, Memory *);
+static void push_imm32(CPU *, Memory *);
+static void push_imm8(CPU *, Memory *);
 static void code_83(CPU *, Memory *);
 static void mov_r32_imm32(CPU *, Memory *);
 static void mov_rm32_imm32(CPU *, Memory *);
@@ -57,6 +59,8 @@ void instruction_init_table(void) {
   for (int i = 0; i < REGISTERS_NUM; i++) {
     instruction_table[0x58 + i] = pop_r32;
   }
+  instruction_table[0x68] = push_imm32;
+  instruction_table[0x6a] = push_imm8;
   instruction_table[0x83] = code_83;
   instruction_table[0x89] = mov_rm32_r32;
   instruction_table[0x8b] = mov_r32_rm32;
@@ -151,7 +155,7 @@ void set_rm32(CPU *cpu, Memory *memory, ModRM *modrm, uint32_t value) {
 }
 
 
-void push32(CPU *cpu, Memory *memory, uint8_t value) {
+void push32(CPU *cpu, Memory *memory, uint32_t value) {
   uint32_t address = cpu_get_register_r(cpu, ESP) - 4;
   cpu_set_register_r(cpu, ESP, address);
   memory_set_code32(memory, address, value);
@@ -188,6 +192,20 @@ static void pop_r32(CPU *cpu, Memory *memory) {
   uint8_t register_index = memory_get_code8(memory, cpu_get_register_eip(cpu)) - 0x58;
   cpu_set_register_r(cpu, register_index, pop32(cpu, memory));
   cpu_add_to_register_eip(cpu, 1);
+}
+
+
+static void push_imm32(CPU *cpu, Memory *memory) {
+  uint8_t value = memory_get_code32(memory, cpu_add_to_register_eip(cpu) + 1);
+  push32(cpu, memory, value);
+  cpu_add_to_register_eip(cpu, 5);
+}
+
+
+static void push_imm8(CPU *cpu, Memory *memory) {
+  uint8_t value = memory_get_code8(memory, cpu_add_to_register_eip(cpu) + 1);
+  push32(cpu, memory, value);
+  cpu_add_to_register_eip(cpu, 2);
 }
 
 
