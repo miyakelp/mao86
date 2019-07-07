@@ -1,6 +1,7 @@
 BITS 32
 start:
   mov esp, 0x1000
+  sub esp, 0x0010
   mov ebp, esp
   mov eax, 2
   mov dword [ebp + 4], 5

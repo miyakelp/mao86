@@ -256,13 +256,13 @@ static void sub_rm32_imm8(CPU *cpu, Memory *memory, ModRM *modrm) {
 
 
 static void inc_rm32(CPU *cpu, Memory *memory, ModRM *modrm) {
-  uint32_t value = cpu_get_register_r(cpu, modrm->register_index);
-  cpu_set_register_r(cpu, modrm->register_index, value + 1);
+  uint32_t value = get_rm32(cpu, memory, modrm);
+  set_rm32(cpu, memory, modrm, value + 1);
 }
 
 
 static void dec_rm32(CPU *cpu, Memory *memory, ModRM *modrm) {
-  uint32_t value = cpu_get_register_r(cpu, modrm->register_index);
-  cpu_set_register_r(cpu, modrm->register_index, value - 1);
+  uint32_t value = get_rm32(cpu, memory, modrm);
+  set_rm32(cpu, memory, modrm, value + 1);
 }
 
