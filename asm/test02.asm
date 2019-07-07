@@ -9,5 +9,7 @@ start:
   mov esi, [ebp + 4]
   inc dword [ebp + 4]
   mov edi, [ebp + 4]
+  push eax
+  pop ecx
   jmp 0
 
