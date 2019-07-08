@@ -38,7 +38,9 @@ static void code_83(CPU *, Memory *);
 static void mov_r32_imm32(CPU *, Memory *);
 static void mov_rm32_imm32(CPU *, Memory *);
 static void mov_rm32_r32(CPU *, Memory *);
+static void near_ret(CPU *, Memory *);
 static void mov_r32_rm32(CPU *, Memory *);
+static void call_rel32(CPU *, Memory *);
 static void short_jump(CPU *, Memory *);
 static void near_jump(CPU *, Memory *);
 static void code_ff(CPU *, Memory *);
@@ -67,7 +69,9 @@ void instruction_init_table(void) {
   for (int i = 0; i < REGISTERS_NUM; i++) {
     instruction_table[0xb8 + i] = mov_r32_imm32;
   }
+  instruction_table[0xc3] = near_ret;
   instruction_table[0xc7] = mov_rm32_imm32;
+  instruction_table[0xe8] = call_rel32;
   instruction_table[0xe9] = near_jump;
   instruction_table[0xeb] = short_jump;
   instruction_table[0xff] = code_ff;
@@ -196,14 +200,14 @@ static void pop_r32(CPU *cpu, Memory *memory) {
 
 
 static void push_imm32(CPU *cpu, Memory *memory) {
-  uint8_t value = memory_get_code32(memory, cpu_add_to_register_eip(cpu) + 1);
+  uint8_t value = memory_get_code32(memory, cpu_get_register_eip(cpu) + 1);
   push32(cpu, memory, value);
   cpu_add_to_register_eip(cpu, 5);
 }
 
 
 static void push_imm8(CPU *cpu, Memory *memory) {
-  uint8_t value = memory_get_code8(memory, cpu_add_to_register_eip(cpu) + 1);
+  uint8_t value = memory_get_code8(memory, cpu_get_register_eip(cpu) + 1);
   push32(cpu, memory, value);
   cpu_add_to_register_eip(cpu, 2);
 }
@@ -259,6 +263,11 @@ static void mov_rm32_r32(CPU *cpu, Memory *memory) {
 }
 
 
+static void near_ret(CPU *cpu, Memory *memory) {
+  cpu_set_register_eip(cpu, pop32(cpu, memory));
+}
+
+
 static void mov_r32_rm32(CPU *cpu, Memory *memory) {
   cpu_add_to_register_eip(cpu, 1);
 
@@ -267,6 +276,13 @@ static void mov_r32_rm32(CPU *cpu, Memory *memory) {
 
   uint32_t rm32 = get_rm32(cpu, memory, &modrm);
   cpu_set_register_r(cpu, modrm.register_index, rm32);
+}
+
+
+static void call_rel32(CPU *cpu, Memory *memory) {
+  int32_t diff = (int32_t)memory_get_code32(memory, cpu_get_register_eip(cpu));
+  push32(cpu, memory, cpu_get_register_eip(cpu));
+  cpu_add_to_register_eip(cpu, diff + 5);
 }
 
 
