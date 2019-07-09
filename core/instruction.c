@@ -35,11 +35,12 @@ static void pop_r32(CPU *, Memory *);
 static void push_imm32(CPU *, Memory *);
 static void push_imm8(CPU *, Memory *);
 static void code_83(CPU *, Memory *);
-static void mov_r32_imm32(CPU *, Memory *);
-static void mov_rm32_imm32(CPU *, Memory *);
 static void mov_rm32_r32(CPU *, Memory *);
-static void near_ret(CPU *, Memory *);
 static void mov_r32_rm32(CPU *, Memory *);
+static void mov_r32_imm32(CPU *, Memory *);
+static void near_ret(CPU *, Memory *);
+static void mov_rm32_imm32(CPU *, Memory *);
+static void leave(CPU *, Memory *);
 static void call_rel32(CPU *, Memory *);
 static void short_jump(CPU *, Memory *);
 static void near_jump(CPU *, Memory *);
@@ -71,6 +72,7 @@ void instruction_init_table(void) {
   }
   instruction_table[0xc3] = near_ret;
   instruction_table[0xc7] = mov_rm32_imm32;
+  instruction_table[0xc9] = leave;
   instruction_table[0xe8] = call_rel32;
   instruction_table[0xe9] = near_jump;
   instruction_table[0xeb] = short_jump;
@@ -231,12 +233,25 @@ static void code_83(CPU *cpu, Memory *memory) {
 }
 
 
-static void mov_r32_imm32(CPU *cpu, Memory *memory) {
-  uint8_t register_num = memory_get_code8(memory, cpu->reg->eip) - 0xB8;
-  uint32_t value = memory_get_code32(memory, cpu->reg->eip + 1);
+static void mov_rm32_r32(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
 
-  cpu_set_register_r(cpu, register_num, value);
-  cpu_add_to_register_eip(cpu, 5);
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  uint32_t r32 = cpu_get_register_r(cpu, modrm.register_index);
+  set_rm32(cpu, memory, &modrm, r32);
+}
+
+
+static void mov_r32_rm32(CPU *cpu, Memory *memory) {
+  cpu_add_to_register_eip(cpu, 1);
+
+  ModRM modrm;
+  parse_modrm(cpu, memory, &modrm);
+
+  uint32_t rm32 = get_rm32(cpu, memory, &modrm);
+  cpu_set_register_r(cpu, modrm.register_index, rm32);
 }
 
 
@@ -252,30 +267,25 @@ static void mov_rm32_imm32(CPU *cpu, Memory *memory) {
 }
 
 
-static void mov_rm32_r32(CPU *cpu, Memory *memory) {
-  cpu_add_to_register_eip(cpu, 1);
-
-  ModRM modrm;
-  parse_modrm(cpu, memory, &modrm);
-
-  uint32_t r32 = cpu_get_register_r(cpu, modrm.register_index);
-  set_rm32(cpu, memory, &modrm, r32);
-}
-
-
 static void near_ret(CPU *cpu, Memory *memory) {
   cpu_set_register_eip(cpu, pop32(cpu, memory));
 }
 
 
-static void mov_r32_rm32(CPU *cpu, Memory *memory) {
+static void mov_r32_imm32(CPU *cpu, Memory *memory) {
+  uint8_t register_num = memory_get_code8(memory, cpu->reg->eip) - 0xB8;
+  uint32_t value = memory_get_code32(memory, cpu->reg->eip + 1);
+
+  cpu_set_register_r(cpu, register_num, value);
+  cpu_add_to_register_eip(cpu, 5);
+}
+
+
+static void leave(CPU *cpu, Memory *memory) {
+  uint32_t ebp = cpu_get_register_r(cpu, EBP);
+  cpu_set_register_r(cpu, ESP, ebp);
+  cpu_set_register_r(cpu, EBP, pop32(cpu, memory));
   cpu_add_to_register_eip(cpu, 1);
-
-  ModRM modrm;
-  parse_modrm(cpu, memory, &modrm);
-
-  uint32_t rm32 = get_rm32(cpu, memory, &modrm);
-  cpu_set_register_r(cpu, modrm.register_index, rm32);
 }
 
 
