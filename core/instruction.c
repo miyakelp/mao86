@@ -82,6 +82,7 @@ void instruction_init_table(void) {
 
 void instruction_execute(CPU *cpu, Memory *memory) {
   uint8_t opcode = memory_get_code8(memory, cpu_get_register_eip(cpu));
+  printf("0x%x\n", opcode);
   instruction_table[opcode](cpu, memory);
 }
 
@@ -290,8 +291,8 @@ static void leave(CPU *cpu, Memory *memory) {
 
 
 static void call_rel32(CPU *cpu, Memory *memory) {
-  int32_t diff = (int32_t)memory_get_code32(memory, cpu_get_register_eip(cpu));
-  push32(cpu, memory, cpu_get_register_eip(cpu));
+  int32_t diff = (int32_t)memory_get_code32(memory, cpu_get_register_eip(cpu) + 1);
+  push32(cpu, memory, cpu_get_register_eip(cpu) + 5);
   cpu_add_to_register_eip(cpu, diff + 5);
 }
 
